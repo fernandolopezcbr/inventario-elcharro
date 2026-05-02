@@ -46,10 +46,44 @@ from django.template.loader import get_template
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from core.decorators import grupo_requerido, administrador_requerido
+from django.contrib.auth.models import User
+
+def login_view(request):
+    # Crear superusuario si no existe (solo para producción en Render)
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='admin123'
+        )
+        print("Superusuario admin creado automáticamente")
+    
+    if request.user.is_authenticated:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Credenciales incorrectas')
+    return render(request, 'core/login.html')
 
 # ==================== AUTENTICACIÓN ====================
 
 def login_view(request):
+    # Crear superusuario si no existe (solo para producción en Render)
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='admin123'
+        )
+        print("Superusuario admin creado automáticamente")
+    
     if request.user.is_authenticated:
         return redirect('home')
     
