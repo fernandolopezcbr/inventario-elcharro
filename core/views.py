@@ -48,6 +48,10 @@ from django.core.serializers.json import DjangoJSONEncoder
 from core.decorators import grupo_requerido, administrador_requerido
 from django.contrib.auth.models import User
 
+from django.http import JsonResponse
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
 def login_view(request):
     # Crear superusuario si no existe (solo para producción en Render)
     if not User.objects.filter(username='admin').exists():
@@ -2783,9 +2787,8 @@ def crear_categoria(request):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método no permitido'})
 
+@csrf_exempt
 def test_debug(request):
-    from django.conf import settings
-    import json
     return JsonResponse({
         'debug': settings.DEBUG,
         'allowed_hosts': settings.ALLOWED_HOSTS,
