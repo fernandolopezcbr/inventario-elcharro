@@ -2782,3 +2782,11 @@ def crear_categoria(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+def test_debug(request):
+    from django.conf import settings
+    import json
+    return JsonResponse({
+        'debug': settings.DEBUG,
+        'allowed_hosts': settings.ALLOWED_HOSTS,
+    })

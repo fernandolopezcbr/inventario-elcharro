@@ -56,4 +56,5 @@ urlpatterns = [
     path('pedidos/eliminar-detalle/', views.eliminar_detalle_pedido, name='eliminar_detalle_pedido'),
     path('pedidos/anular/<int:id>/', views.anular_pedido, name='anular_pedido'),
     path('categorias/crear/', views.crear_categoria, name='crear_categoria'),
+    path('test-debug/', views.test_debug, name='test_debug'),
 ]
