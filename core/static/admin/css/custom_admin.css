@@ -1,0 +1,104 @@
+/* 1. Header y Gradiente */
+#header {
+    background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%) !important;
+    color: #ffffff !important;
+    padding: 12px 20px !important;
+    border-bottom: 3px solid #D4AF37 !important;
+    /* Línea dorada sutil */
+}
+
+#branding h1 a {
+    color: #ffffff !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* 2. Barra Lateral (Navigation Sidebar) */
+#nav-sidebar {
+    background-color: #ffffff !important;
+    border-right: 1px solid #ddd !important;
+}
+
+#nav-sidebar .module th {
+    background-color: #003B5C !important;
+    /* Azul en títulos de módulo */
+    color: #D4AF37 !important;
+    /* Dorado en el texto */
+}
+
+#nav-sidebar .module a:hover {
+    color: #003B5C !important;
+    background-color: #f4f7f6 !important;
+}
+
+/* 3. Botones y Elementos de Acción */
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+    background: #003B5C !important;
+    border: 1px solid #003B5C !important;
+    color: #ffffff !important;
+    border-radius: 4px !important;
+    transition: all 0.3s ease;
+}
+
+.button:hover,
+input[type=submit]:hover {
+    background: #D4AF37 !important;
+    /* Cambia a dorado al pasar el mouse */
+    border-color: #D4AF37 !important;
+    color: #003B5C !important;
+    font-weight: bold;
+}
+
+.button.default,
+input[type=submit].default {
+    background: #D4AF37 !important;
+    /* Botón principal en dorado */
+    border-color: #D4AF37 !important;
+    color: #003B5C !important;
+}
+
+/* 4. Tablas (Lista de objetos) */
+#changelist #result_list thead th {
+    background: #f4f7f6 !important;
+    color: #003B5C !important;
+    border-bottom: 2px solid #D4AF37 !important;
+}
+
+.results tr.row1 {
+    background: #ffffff !important;
+}
+
+.results tr.row2 {
+    background: #fcfcfc !important;
+}
+
+/* 5. Breadcrumbs (Migas de pan) */
+.breadcrumbs {
+    background: #ffffff !important;
+    border-bottom: 1px solid #eee !important;
+    color: #666 !important;
+}
+
+.breadcrumbs a {
+    color: #005F8D !important;
+}
+
+/* Estilo del Logo */
+.logo-admin {
+    height: 45px;
+    width: auto;
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+#user-tools {
+    color: #ffffff !important;
+}
+
+#user-tools a {
+    color: #D4AF37 !important;
+    /* Enlaces de usuario en dorado */
+}

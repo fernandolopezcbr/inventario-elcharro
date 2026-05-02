@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Pedidos - El Charro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f3f6ff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white !important;
+        }
+
+
+        .table thead th {
+            background-color: #005F8D !important;
+            color: white !important;
+            font-weight: 600;
+        }
+
+
+
+        .container-custom {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .estado-pendiente {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .estado-completado {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .estado-anulado {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fas fa-box"></i> El Charro</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'catalogo_pedidos' %}"><i
+                                class="fas fa-store"></i> Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i>
+                            Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
+                                class="fas fa-sign-out-alt"></i> Salir</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <div class="mb-3">
+            <a href="{% url 'catalogo_pedidos' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i>
+                Seguir comprando</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Historial de Pedidos
+                    {% if pendientes_count > 0 %}
+                    <span class="badge bg-warning ms-2">{{ pendientes_count }} pendientes</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Filtros -->
+                <form method="GET" class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" name="busqueda" class="form-control"
+                            placeholder="N° Pedido, cliente o NIT..." value="{{ busqueda }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i>
+                            Buscar</button>
+                    </div>
+                    {% if busqueda or fecha_desde or fecha_hasta %}
+                    <div class="col-12">
+                        <a href="{% url 'historial_pedidos' %}" class="btn btn-secondary btn-sm"><i
+                                class="fas fa-times"></i> Limpiar filtros</a>
+                    </div>
+                    {% endif %}
+                </form>
+
+                <!-- Selector de cantidad por página -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <label class="me-2">Mostrar:</label>
+                        <select id="por_pagina" class="form-select form-select-sm d-inline-block w-auto"
+                            onchange="cambiarPorPagina()">
+                            <option value="20">20 registros</option>
+                            <option value="50">50 registros</option>
+                            <option value="100">100 registros</option>
+                        </select>
+                    </div>
+                    <small>Mostrando {{ pedidos|length }} de {{ pedidos.paginator.count }} registros</small>
+                </div>
+
+                <!-- Tabla -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>N° Pedido</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Dirección</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Usuario</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pedido in pedidos %}
+                            <tr>
+                                <td><strong>{{ pedido.numero_pedido }}</strong></td>
+                                <td>{{ pedido.fecha|date:"d/m/Y H:i" }}
+                </div>
+                <td>
+                    {{ pedido.cliente.nombre|default:"Sin cliente" }}
+                    {% if pedido.cliente.nit %}
+                    <br><small class="text-muted">NIT: {{ pedido.cliente.nit }}</small>
+                    {% else %}
+                    <br><small class="text-muted">Consumidor Final</small>
+                    {% endif %}
+            </div>
+            <td>{{ pedido.direccion_envio|default:"-"|truncatechars:30 }}
+        </div>
+        <td>Q{{ pedido.total }}
+    </div>
+    <td>
+        {% if pedido.estado == 'pendiente' %}
+        <span class="estado-pendiente"><i class="fas fa-clock"></i> Pendiente</span>
+        {% elif pedido.estado == 'completado' %}
+        <span class="estado-completado"><i class="fas fa-check-circle"></i> Completado</span>
+        {% else %}
+        <span class="estado-anulado"><i class="fas fa-ban"></i> Anulado</span>
+        {% endif %}
+        </div>
+    <td>{{ pedido.usuario.username }}</div>
+    <td>
+        <button class="btn btn-sm btn-info" onclick="verDetalle({{ pedido.id }})">
+            <i class="fas fa-eye"></i>
+        </button>
+        </div>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="text-center">No hay pedidos registrados</div>
+        </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if pedidos.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if pedidos.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ pedidos.previous_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active"><span class="page-link">{{ pedidos.number }}</span></li>
+
+                {% if pedidos.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ pedidos.next_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        </div>
+        </div>
+        </div>
+
+        <!-- Modal Detalle Pedido -->
+        <div class="modal fade" id="modalDetallePedido" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="fas fa-receipt"></i> Detalle del Pedido</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="detalleContenido">Cargando...</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Seleccionar la cantidad por página actual
+            var porPaginaActual = "{{ por_pagina }}";
+            var selectPorPagina = document.getElementById('por_pagina');
+            if (selectPorPagina) {
+                for (var i = 0; i < selectPorPagina.options.length; i++) {
+                    if (selectPorPagina.options[i].value === porPaginaActual) {
+                        selectPorPagina.options[i].selected = true;
+                        break;
+                    }
+                }
+            }
+        </script>
+        <script>
+            function cambiarPorPagina() {
+                var valor = document.getElementById('por_pagina').value;
+                var url = new URL(window.location.href);
+                url.searchParams.set('por_pagina', valor);
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            }
+
+            function verDetalle(pedidoId) {
+                $('#detalleContenido').html('<p class="text-center">Cargando...</p>');
+                $('#modalDetallePedido').modal('show');
+
+                $.get('/pedidos/detalle/' + pedidoId + '/', function (data) {
+                    let html = `
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>N° Pedido:</strong> ${data.numero_pedido}</div>
+                        <div class="col-6"><strong>Fecha:</strong> ${data.fecha}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Cliente:</strong> ${data.cliente}</div>
+                        <div class="col-6"><strong>Dirección:</strong> ${data.direccion}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Usuario:</strong> ${data.usuario}</div>
+                        <div class="col-6"><strong>Estado:</strong> ${data.estado === 'pendiente' ? '🟡 Pendiente' : (data.estado === 'completado' ? '🟢 Completado' : '🔴 Anulado')}</div>
+                    </div>
+                    <hr>
+                    <h6>Productos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Cantidad</th><th>Producto</th><th>Precio Unitario</th><th>Subtotal</th></thead>
+                            <tbody>
+                `;
+
+                    data.detalles.forEach(d => {
+                        let disabled = (data.estado !== 'pendiente') ? 'disabled' : '';
+                        html += `
+                        <tr>
+                            <td><input type="number" class="form-control form-control-sm" value="${d.cantidad}" style="width:70px" disabled></td>
+                            <td>${d.producto}<br><small>${d.codigo} - ${d.ubicacion}</small></td>
+                            <td><input type="number" step="0.01" class="form-control form-control-sm precio-input" value="${d.precio_unitario}" style="width:100px" data-detalle="${d.id}" data-pedido="${data.id}" ${disabled}></td>
+                            <td class="subtotal-${d.id}">Q${d.subtotal}</td>
+                        </tr>
+                    `;
+                    });
+
+                    html += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6"><strong>Subtotal:</strong> <span id="subtotalTotal">Q${data.subtotal}</span></div>
+                        <div class="col-6"><strong>Total:</strong> <span id="totalTotal">Q${data.total}</span></div>
+                    </div>
+                `;
+
+                    if (data.estado === 'pendiente') {
+                        html += `
+                        <hr>
+                        <h6>Información obligatoria para completar pedido</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo de Documento *</label>
+                                <select id="tipo_documento" class="form-select">
+                                    <option value="">Seleccionar</option>
+                                    <option value="factura" ${data.tipo_documento === 'factura' ? 'selected' : ''}>Factura</option>
+                                    <option value="envio" ${data.tipo_documento === 'envio' ? 'selected' : ''}>Envío</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo de Pago *</label>
+                                <select id="tipo_pago" class="form-select">
+                                    <option value="">Seleccionar</option>
+                                    <option value="contado" ${data.tipo_pago === 'contado' ? 'selected' : ''}>Contado</option>
+                                    <option value="credito" ${data.tipo_pago === 'credito' ? 'selected' : ''}>Crédito</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">N° Factura/Envío *</label>
+                                <input type="text" id="numero_factura" class="form-control" value="${data.numero_factura || ''}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            <textarea id="observaciones" class="form-control" rows="2">${data.observaciones || ''}</textarea>
+                        </div>
+                        <div class="mt-3 text-end">
+                            <button id="btnFinalizarVenta" class="btn btn-success" disabled>Finalizar Venta</button>
+                            <button id="btnAnularPedido" class="btn btn-danger">Anular Pedido</button>
+                        </div>
+                    `;
+                    } else if (data.estado === 'completado') {
+                        html += `<hr><div class="alert alert-success text-center"><i class="fas fa-check-circle"></i> Pedido completado</div>`;
+                    } else {
+                        html += `<hr><div class="alert alert-danger text-center"><i class="fas fa-ban"></i> Pedido anulado</div>`;
+                    }
+
+                    $('#detalleContenido').html(html);
+
+                    if (data.estado === 'pendiente') {
+                        // Actualizar precio
+                        $('.precio-input').on('change', function () {
+                            let detalleId = $(this).data('detalle');
+                            let nuevoPrecio = parseFloat($(this).val());
+                            let cantidad = $(this).closest('tr').find('td:first input').val();
+                            let nuevoSubtotal = cantidad * nuevoPrecio;
+                            $('.subtotal-' + detalleId).text('Q' + nuevoSubtotal.toFixed(2));
+
+                            let nuevoTotal = 0;
+                            $('.precio-input').each(function () {
+                                let precio = parseFloat($(this).val());
+                                let cant = $(this).closest('tr').find('td:first input').val();
+                                nuevoTotal += precio * cant;
+                            });
+                            $('#subtotalTotal').text('Q' + nuevoTotal.toFixed(2));
+                            $('#totalTotal').text('Q' + nuevoTotal.toFixed(2));
+
+                            $.ajax({
+                                url: '/pedidos/actualizar-precio/',
+                                method: 'POST',
+                                contentType: 'application/json',
+                                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                                data: JSON.stringify({ detalle_id: detalleId, precio: nuevoPrecio })
+                            });
+                        });
+
+                        // Validar campos
+                        function validarCampos() {
+                            let tipoDoc = $('#tipo_documento').val();
+                            let tipoPago = $('#tipo_pago').val();
+                            let numFactura = $('#numero_factura').val().trim();
+                            $('#btnFinalizarVenta').prop('disabled', !(tipoDoc && tipoPago && numFactura));
+                        }
+
+                        $('#tipo_documento, #tipo_pago, #numero_factura').on('change keyup', validarCampos);
+
+                        // Guardar campos
+                        $('#tipo_documento, #tipo_pago, #numero_factura, #observaciones').on('change', function () {
+                            $.ajax({
+                                url: '/pedidos/actualizar-campos/',
+                                method: 'POST',
+                                contentType: 'application/json',
+                                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                                data: JSON.stringify({
+                                    pedido_id: pedidoId,
+                                    tipo_documento: $('#tipo_documento').val(),
+                                    tipo_pago: $('#tipo_pago').val(),
+                                    numero_factura: $('#numero_factura').val(),
+                                    observaciones: $('#observaciones').val()
+                                })
+                            });
+                        });
+
+                        // Finalizar venta
+                        $('#btnFinalizarVenta').click(function () {
+                            if (confirm('¿Finalizar esta venta?')) {
+                                $.ajax({
+                                    url: '/pedidos/finalizar/' + pedidoId + '/',
+                                    method: 'POST',
+                                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                                    success: function (response) {
+                                        if (response.success) {
+                                            alert('Venta finalizada');
+                                            location.reload();
+                                        } else {
+                                            alert('Error: ' + response.error);
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                        // Anular pedido
+                        $('#btnAnularPedido').click(function () {
+                            if (confirm('¿Anular este pedido?')) {
+                                $.ajax({
+                                    url: '/pedidos/anular/' + pedidoId + '/',
+                                    method: 'POST',
+                                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                                    success: function (response) {
+                                        if (response.success) {
+                                            alert('Pedido anulado');
+                                            location.reload();
+                                        } else {
+                                            alert('Error: ' + response.error);
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                        validarCampos();
+                    }
+                });
+            }
+        </script>
+</body>
+
+</html>

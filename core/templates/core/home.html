@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Importaciones El Charro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f3f6ff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* NAVBAR EN AZUL CORPORATIVO */
+        .navbar-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+            padding: 10px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: white !important;
+        }
+
+        /* Logo blanco en el navbar */
+        .logo-nav {
+            height: 45px;
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .navbar-custom .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .navbar-custom .nav-link:hover {
+            color: #ffffff !important;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        /* TARJETAS DE MENÚ EN AZUL */
+        .card-menu {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        .card-menu:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 95, 141, 0.15);
+            color: #003B5C;
+        }
+
+        .card-menu i {
+            font-size: 45px;
+            margin-bottom: 20px;
+            color: #005F8D;
+            /* Azul para iconos */
+            transition: 0.3s;
+        }
+
+        .card-menu:hover i {
+            color: #003B5C;
+            transform: scale(1.1);
+        }
+
+        .card-menu h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .row-custom {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            color: #003B5C;
+            font-weight: 700;
+        }
+
+        .badge-warning-custom {
+            background-color: #ff9f43;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            padding: 5px 12px;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'img/logo_charro.png' %}" alt="El Charro Logo" class="logo-nav">
+                <span>EL CHARRO</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link"><i class="fas fa-user-circle me-1"></i> {{ nombre_usuario }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-power-off me-1"></i> Salir
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <h1 class="text-center mb-2">Panel de Control</h1>
+        <p class="text-center text-muted mb-5">Sistema de Inventario - Importaciones El Charro</p>
+
+        <div class="row-custom">
+            <!-- Módulos para todos (Operativos + Admin) -->
+            <a href="{% url 'catalogo_pedidos' %}" class="card-menu">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Pedidos</h3>
+                <p class="text-muted small">Carrito de Pedidos</p>
+                {% if pendientes_count > 0 %}
+                <span class="badge badge-warning-custom">
+                    {{ pendientes_count }} pendientes
+                </span>
+                {% endif %}
+            </a>
+
+            <a href="{% url 'listar_productos' %}" class="card-menu">
+                <i class="fas fa-exchange-alt"></i>
+                <h3>Movimientos</h3>
+                <p class="text-muted small">Movimientos y ubicaciones</p>
+            </a>
+
+            <a href="{% url 'ventas' %}" class="card-menu">
+                <i class="fas fa-cash-register"></i>
+                <h3>Ventas</h3>
+                <p class="text-muted small">Registro de ventas</p>
+            </a>
+
+            <a href="{% url 'inventario_general' %}" class="card-menu">
+                <i class="fas fa-boxes"></i>
+                <h3>Inventario General</h3>
+                <p class="text-muted small">Stock consolidado</p>
+            </a>
+
+            <a href="{% url 'catalogo' %}" class="card-menu">
+                <i class="fas fa-book-open"></i>
+                <h3>Catálogo</h3>
+                <p class="text-muted small">Flipbook de productos</p>
+            </a>
+
+            <!-- Módulos solo para Administradores -->
+            {% if user.is_superuser or user.groups.first.name == 'Administrador' %}
+            <a href="{% url 'listar_entradas' %}" class="card-menu">
+                <i class="fas fa-truck-loading"></i>
+                <h3>Entradas</h3>
+                <p class="text-muted small">Registro de productos</p>
+            </a>
+
+            <a href="{% url 'listar_clientes' %}" class="card-menu">
+                <i class="fas fa-user-tag"></i>
+                <h3>Clientes</h3>
+                <p class="text-muted small">Cartera de clientes</p>
+            </a>
+
+            <a href="{% url 'listar_proveedores' %}" class="card-menu">
+                <i class="fas fa-truck"></i>
+                <h3>Proveedores</h3>
+                <p class="text-muted small">Gestión de compras</p>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

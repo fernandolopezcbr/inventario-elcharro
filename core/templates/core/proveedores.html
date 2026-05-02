@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proveedores - Sistema de Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #003B5C;
+            --primary-light: #005F8D;
+            --accent: #D4AF37;
+            --bg-gray: #f4f7f6;
+            --white: #ffffff;
+            --gradient: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+        }
+
+        body {
+            background-color: #f3f6ff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Navbar con tu gradiente azul */
+        .navbar-custom {
+            background: var(--gradient);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: var(--white) !important;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        /* Cabeceras con gradiente */
+        .card-header-custom,
+        .modal-header-custom {
+            background: var(--gradient);
+            color: var(--white);
+            border-bottom: 3px solid var(--accent);
+            /* Detalle en dorado */
+        }
+
+        /* Botones Personalizados */
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        /* Resaltado de botones de acción con el dorado */
+        .btn-warning {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-warning:hover {
+            background-color: #b8952d;
+            border-color: #b8952d;
+            color: #fff;
+        }
+
+        /* Estilo de la tabla */
+        .table thead {
+            background-color: #e9ecef;
+            color: var(--primary);
+        }
+
+        .page-link {
+            color: var(--primary);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .btn-action {
+            margin: 0 2px;
+        }
+
+        /* Pequeño detalle para los iconos principales */
+        h2 i,
+        h5 i {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fas fa-box"></i> Inventario Empresa</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
+                                class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <div class="mb-3">
+            <a href="{% url 'home' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Regresar al Menú
+                Principal</a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-truck"></i> Directorio de Proveedores</h2>
+            <div>
+                <button class="btn btn-danger me-2" onclick="generarReporte('pdf')"><i class="fas fa-file-pdf"></i>
+                    Reporte PDF</button>
+                <button class="btn btn-success me-2" onclick="generarReporte('excel')"><i class="fas fa-file-excel"></i>
+                    Exportar Excel</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoProveedor"
+                    onclick="limpiarFormulario()">
+                    <i class="fas fa-plus"></i> Nuevo Proveedor
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtro de búsqueda -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-10">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" name="busqueda" class="form-control"
+                            placeholder="Buscar por NIT, nombre, teléfono, email, contacto, ciudad o país..."
+                            value="{{ busqueda }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i>
+                            Buscar</button>
+                    </div>
+                    {% if busqueda %}
+                    <div class="col-12">
+                        <a href="{% url 'listar_proveedores' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-times"></i> Limpiar filtros
+                        </a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Selector de cantidad por página -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <label class="me-2">Mostrar:</label>
+                <select id="por_pagina" class="form-select form-select-sm d-inline-block w-auto"
+                    onchange="cambiarPorPagina()">
+                    <option value="20">20 registros</option>
+                    <option value="50">50 registros</option>
+                    <option value="100">100 registros</option>
+                </select>
+            </div>
+            <small>Mostrando {{ proveedores|length }} de {{ proveedores.paginator.count }} registros</small>
+        </div>
+
+        <!-- Tabla de proveedores -->
+        <div class="card">
+            <div class="card-header-custom">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Listado de Proveedores</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>NIT/ID</th>
+                                <th>Nombre</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>Persona Contacto</th>
+                                <th>Ciudad</th>
+                                <th>País</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proveedor in proveedores %}
+                            <tr>
+                                <td><strong>{{ proveedor.nit }}</strong></td>
+                                <td>{{ proveedor.nombre }}
+                </div>
+                </td>
+                <td>{{ proveedor.telefono|default:"-" }}
+            </div>
+            </td>
+            <td>{{ proveedor.email|default:"-" }}
+        </div>
+        </td>
+        <td>{{ proveedor.persona_contacto|default:"-" }}
+    </div>
+    </td>
+    <td>{{ proveedor.ciudad|default:"-" }}</div>
+    </td>
+    <td>{{ proveedor.pais|default:"-" }}</div>
+    </td>
+    <td>
+        <button class="btn btn-sm btn-warning" onclick="editarProveedor({{ proveedor.id }})">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarProveedor({{ proveedor.id }}, '{{ proveedor.nombre }}')">
+            <i class="fas fa-trash"></i>
+        </button>
+        </div>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="text-center">No hay proveedores registrados</div>
+        </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if proveedores.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if proveedores.has_previous %}
+                <li class="page-item"><a class="page-link"
+                        href="?page={{ proveedores.previous_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}">Anterior</a>
+                </li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ proveedores.number }}</span></li>
+                {% if proveedores.has_next %}
+                <li class="page-item"><a class="page-link"
+                        href="?page={{ proveedores.next_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}">Siguiente</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        </div>
+        </div>
+        </div>
+
+        <!-- Modal Nuevo Proveedor -->
+        <div class="modal fade" id="modalNuevoProveedor" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-custom">
+                        <h5 class="modal-title"><i class="fas fa-truck"></i> Nuevo Proveedor</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="formNuevoProveedor">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">NIT/ID *</label>
+                                    <input type="text" class="form-control" name="nit" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre/Razón Social *</label>
+                                    <input type="text" class="form-control" name="nombre" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control" name="telefono">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="email">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Persona de Contacto</label>
+                                <input type="text" class="form-control" name="persona_contacto">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dirección Fiscal</label>
+                                <textarea class="form-control" name="direccion_fiscal" rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Ciudad</label>
+                                    <input type="text" class="form-control" name="ciudad">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">País</label>
+                                    <input type="text" class="form-control" name="pais" value="Guatemala">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Código Postal</label>
+                                    <input type="text" class="form-control" name="codigo_postal">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Observaciones</label>
+                                <textarea class="form-control" name="observaciones" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar Proveedor</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Editar Proveedor -->
+        <div class="modal fade" id="modalEditarProveedor" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-custom">
+                        <h5 class="modal-title"><i class="fas fa-edit"></i> Editar Proveedor</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="formEditarProveedor">
+                        {% csrf_token %}
+                        <input type="hidden" name="proveedor_id" id="edit_id">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">NIT/ID *</label>
+                                    <input type="text" class="form-control" name="nit" id="edit_nit" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre/Razón Social *</label>
+                                    <input type="text" class="form-control" name="nombre" id="edit_nombre" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control" name="telefono" id="edit_telefono">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="email" id="edit_email">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Persona de Contacto</label>
+                                <input type="text" class="form-control" name="persona_contacto"
+                                    id="edit_persona_contacto">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dirección Fiscal</label>
+                                <textarea class="form-control" name="direccion_fiscal" id="edit_direccion_fiscal"
+                                    rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Ciudad</label>
+                                    <input type="text" class="form-control" name="ciudad" id="edit_ciudad">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">País</label>
+                                    <input type="text" class="form-control" name="pais" id="edit_pais">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Código Postal</label>
+                                    <input type="text" class="form-control" name="codigo_postal"
+                                        id="edit_codigo_postal">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Observaciones</label>
+                                <textarea class="form-control" name="observaciones" id="edit_observaciones"
+                                    rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Actualizar Proveedor</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Eliminar Proveedor -->
+        <div class="modal fade" id="modalEliminarProveedor" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p>¿Estás seguro de eliminar este proveedor?</p>
+                        <p><strong id="eliminar_nombre"></strong></p>
+                        <form id="formEliminarProveedor">
+                            {% csrf_token %}
+                            <input type="hidden" id="eliminar_id">
+                            <button type="submit" class="btn btn-danger">Sí, Eliminar</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Seleccionar la cantidad por página actual
+            var porPaginaActual = "{{ por_pagina }}";
+            var selectPorPagina = document.getElementById('por_pagina');
+            if (selectPorPagina) {
+                for (var i = 0; i < selectPorPagina.options.length; i++) {
+                    if (selectPorPagina.options[i].value === porPaginaActual) {
+                        selectPorPagina.options[i].selected = true;
+                        break;
+                    }
+                }
+            }
+
+            function cambiarPorPagina() {
+                var valor = document.getElementById('por_pagina').value;
+                var url = new URL(window.location.href);
+                url.searchParams.set('por_pagina', valor);
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            }
+
+            function limpiarFormulario() {
+                $('#formNuevoProveedor')[0].reset();
+            }
+
+            function editarProveedor(id) {
+                fetch('/proveedores/editar/' + id + '/')
+                    .then(response => response.json())
+                    .then(data => {
+                        $('#edit_id').val(data.id);
+                        $('#edit_nit').val(data.nit);
+                        $('#edit_nombre').val(data.nombre);
+                        $('#edit_telefono').val(data.telefono);
+                        $('#edit_email').val(data.email);
+                        $('#edit_persona_contacto').val(data.persona_contacto);
+                        $('#edit_direccion_fiscal').val(data.direccion_fiscal);
+                        $('#edit_ciudad').val(data.ciudad);
+                        $('#edit_pais').val(data.pais);
+                        $('#edit_codigo_postal').val(data.codigo_postal);
+                        $('#edit_observaciones').val(data.observaciones);
+                        new bootstrap.Modal(document.getElementById('modalEditarProveedor')).show();
+                    });
+            }
+
+            function eliminarProveedor(id, nombre) {
+                $('#eliminar_id').val(id);
+                $('#eliminar_nombre').text(nombre);
+                new bootstrap.Modal(document.getElementById('modalEliminarProveedor')).show();
+            }
+
+            function generarReporte(formato) {
+                var busqueda = $('input[name="busqueda"]').val();
+                var params = new URLSearchParams();
+                if (busqueda) params.append('busqueda', busqueda);
+                window.location.href = '/proveedores/' + formato + '/?' + params.toString();
+            }
+
+            // Nuevo proveedor
+            $('#formNuevoProveedor').submit(function (e) {
+                e.preventDefault();
+                let fd = new FormData(this);
+                fetch('/proveedores/crear/', {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    });
+            });
+
+            // Editar proveedor
+            $('#formEditarProveedor').submit(function (e) {
+                e.preventDefault();
+                let id = $('#edit_id').val();
+                let fd = new FormData(this);
+                fetch('/proveedores/editar/' + id + '/', {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    });
+            });
+
+            // Eliminar proveedor
+            $('#formEliminarProveedor').submit(function (e) {
+                e.preventDefault();
+                let id = $('#eliminar_id').val();
+                fetch('/proveedores/eliminar/' + id + '/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    });
+            });
+        </script>
+</body>
+
+</html>

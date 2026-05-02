@@ -1,0 +1,109 @@
+:root {
+    --color-primary: #4A2C2A;
+    --color-secondary: #8B5E3C;
+    --color-accent: #7B2C2C;
+    --color-background: #E6D3B3;
+    --color-white: #FFFFFF;
+}
+
+body {
+    background-color: var(--color-background);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Navbar */
+.navbar-custom {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: var(--color-white) !important;
+}
+
+/* Botones */
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #2c5e2e, #1e3a20);
+    border: none;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #2c6e8b, #1e4a5e);
+    border: none;
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #8b2c2c, #5e1e1e);
+    border: none;
+}
+
+/* Cards */
+.card-header-custom {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+}
+
+.card-menu {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: var(--color-primary);
+    display: block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-menu:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+    color: var(--color-primary);
+}
+
+.card-menu i {
+    font-size: 48px;
+    color: var(--color-secondary);
+    margin-bottom: 15px;
+}
+
+/* Modales */
+.modal-header-custom {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+}
+
+/* Tablas */
+.table thead {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(139, 94, 60, 0.05);
+}
+
+/* Paginación */
+.page-item.active .page-link {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.page-link {
+    color: var(--color-primary);
+}
+
+.page-link:hover {
+    color: var(--color-accent);
+}

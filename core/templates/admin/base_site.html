@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Estilos exclusivos para el encabezado */
+    #header {
+        background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%) !important;
+        color: #ffffff !important;
+        padding: 12px 20px !important;
+        height: auto !important;
+        border-bottom: 3px solid #D4AF37 !important;
+    }
+
+    /* Estilo del branding y logo */
+    #branding h1 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    #branding h1 a {
+        color: #ffffff !important;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+    }
+
+    .logo-admin {
+        height: 40px;
+        width: auto;
+    }
+
+    /* Enlaces de usuario (Bienvenido, Ver sitio, etc.) */
+    #user-tools {
+        color: #ffffff !important;
+        font-weight: bold;
+    }
+
+    #user-tools a {
+        color: #D4AF37 !important;
+        /* Dorado para resaltar enlaces */
+        text-transform: uppercase;
+        font-size: 11px;
+    }
+
+    #user-tools a:hover {
+        border-bottom: 1px solid #D4AF37;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'img/logo_charro.png' %}" class="logo-admin" alt="El Charro">
+        El Charro - Sistema de Inventario
+    </a>
+</h1>
+{% endblock %}

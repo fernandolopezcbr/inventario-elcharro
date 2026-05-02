@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Ventas - Sistema de Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f3f6ff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white !important;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+            color: white;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .btn-accion {
+            margin: 0 2px;
+        }
+
+        .detalle-venta {
+            cursor: pointer;
+            color: #0d6efd;
+        }
+
+        .detalle-venta:hover {
+            text-decoration: underline;
+        }
+
+        .estado-contado {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .estado-credito {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fas fa-box"></i> Inventario Empresa</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
+                                class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <div class="mb-3">
+            <a href="{% url 'home' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Regresar al Menú
+                Principal</a>
+            <a href="{% url 'ventas' %}" class="btn btn-success ms-2"><i class="fas fa-plus"></i> Nueva Venta</a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-history"></i> Historial de Ventas</h2>
+            <div>
+                <button class="btn btn-danger me-2" onclick="generarReporte('pdf')"><i class="fas fa-file-pdf"></i>
+                    Reporte PDF</button>
+                <button class="btn btn-success" onclick="generarReporte('excel')"><i class="fas fa-file-excel"></i>
+                    Exportar Excel</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Ventas Registradas</h5>
+            </div>
+            <div class="card-body">
+                <!-- Filtros de búsqueda -->
+                <form method="GET" class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" name="busqueda" class="form-control" placeholder="Factura, cliente o NIT..."
+                            value="{{ busqueda }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i>
+                            Buscar</button>
+                    </div>
+                    {% if busqueda or fecha_desde or fecha_hasta %}
+                    <div class="col-12">
+                        <a href="{% url 'historial_ventas' %}" class="btn btn-secondary btn-sm"><i
+                                class="fas fa-times"></i> Limpiar filtros</a>
+                    </div>
+                    {% endif %}
+                </form>
+
+                <!-- Selector de cantidad por página -->
+                <!-- Selector de cantidad por página -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <label class="me-2">Mostrar:</label>
+                        <select id="por_pagina" class="form-select form-select-sm d-inline-block w-auto"
+                            onchange="cambiarPorPagina()">
+                            <option value="20">20 registros</option>
+                            <option value="50">50 registros</option>
+                            <option value="100">100 registros</option>
+                        </select>
+                    </div>
+                    <small>Mostrando {{ ventas|length }} de {{ ventas.paginator.count }} registros</small>
+                </div>
+
+                <!-- Tabla de ventas -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Factura</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Dirección</th>
+                                <th>Tipo Doc</th>
+                                <th>Tipo Pago</th>
+                                <th>Total</th>
+                                <th>Saldo Pendiente</th>
+                                <th>Estado</th>
+                                <th>Usuario</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venta in ventas %}
+                            <tr>
+                                <td><strong>{{ venta.numero_factura }}</strong></td>
+                                <td>{{ venta.fecha|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {{ venta.cliente.nombre|default:"Consumidor Final" }}
+                                    {% if venta.cliente.nit %}
+                                    <br><small class="text-muted">NIT: {{ venta.cliente.nit }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ venta.cliente.direccion|default:"-"|truncatechars:30 }}</td>
+                                <td>{% if venta.tipo_documento == 'factura' %}Factura{% else %}Envío{% endif %}</td>
+                                <td>
+                                    <span class="estado-{{ venta.tipo_pago }}">{{ venta.tipo_pago|upper }}</span>
+                                </td>
+                                <td><strong>Q{{ venta.total }}</strong></td>
+                                <td>
+                                    {% if venta.tipo_pago == 'credito' and venta.saldo > 0 %}
+                                    Q{{ venta.saldo|floatformat:2 }}
+                                    {% elif venta.tipo_pago == 'credito' and venta.saldo <= 0 %} <span
+                                        class="text-success">Pagado</span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                </td>
+                                <td>
+                                    {% if venta.tipo_pago == 'credito' %}
+                                    {% if venta.saldo <= 0 %} <span class="badge bg-success">Pagado</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pendiente</span>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="badge bg-success">Completado</span>
+                                        {% endif %}
+                                </td>
+                                <td>{{ venta.usuario.username }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="verDetalle({{ venta.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary"
+                                        onclick="generarReporteDetalle({{ venta.id }})">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center">No hay ventas registradas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if ventas.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if ventas.has_previous %}
+                        <li class="page-item"><a class="page-link"
+                                href="?page={{ ventas.previous_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}">Anterior</a>
+                        </li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ ventas.number }}</span></li>
+                        {% if ventas.has_next %}
+                        <li class="page-item"><a class="page-link"
+                                href="?page={{ ventas.next_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}">Siguiente</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalle Venta -->
+    <div class="modal fade" id="modalDetalleVenta" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-receipt"></i> Detalle de Venta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detalle_contenido"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Abonos -->
+    <div class="modal fade" id="modalAbonos" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="fas fa-money-bill"></i> Registrar Abono</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAbono">
+                        {% csrf_token %}
+                        <input type="hidden" id="abono_venta_id">
+                        <div class="mb-3">
+                            <label class="form-label">Cantidad a Abonar *</label>
+                            <input type="number" step="0.01" class="form-control" name="cantidad" id="abono_cantidad"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Comentario</label>
+                            <textarea class="form-control" name="comentario" rows="2"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Abono *</label>
+                            <input type="date" class="form-control" name="fecha_abono" id="abono_fecha" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Registrar Abono</button>
+                    </form>
+                    <hr>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Seleccionar la cantidad por página actual
+        var porPaginaActual = "{{ por_pagina }}";
+        var selectPorPagina = document.getElementById('por_pagina');
+        if (selectPorPagina) {
+            for (var i = 0; i < selectPorPagina.options.length; i++) {
+                if (selectPorPagina.options[i].value === porPaginaActual) {
+                    selectPorPagina.options[i].selected = true;
+                    break;
+                }
+            }
+        }
+    </script>
+    <script>
+        let ventaActual = null;
+
+        function cambiarPorPagina() {
+            var valor = document.getElementById('por_pagina').value;
+            var url = new URL(window.location.href);
+            url.searchParams.set('por_pagina', valor);
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+
+        function verDetalle(ventaId) {
+            $('#detalle_contenido').html('<p class="text-center">Cargando...</p>');
+            $('#modalDetalleVenta').modal('show');
+
+            $.get('/ventas/detalle/' + ventaId + '/', function (data) {
+                let html = `
+            <div class="row mb-3">
+                <div class="col-6"><strong>Factura/Envío:</strong> ${data.numero_factura}</div>
+                <div class="col-6"><strong>Fecha:</strong> ${data.fecha}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6"><strong>Cliente:</strong> ${data.cliente}</div>
+                <div class="col-6"><strong>NIT:</strong> ${data.nit || 'CF'}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6"><strong>Dirección:</strong> ${data.direccion || '-'}</div>
+                <div class="col-6"><strong>Tipo Pago:</strong> ${data.tipo_pago.toUpperCase()}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6"><strong>Tipo Documento:</strong> ${data.tipo_documento === 'factura' ? 'Factura' : 'Envío'}</div>
+                <div class="col-6"><strong>Estado:</strong> ${data.esta_pagado ? '<span class="badge bg-success">Pagado</span>' : '<span class="badge bg-warning">Pendiente</span>'}</div>
+            </div>
+            <hr>
+            <h6>Productos</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead><tr><th>Cantidad</th><th>Producto</th><th>Precio</th><th>Subtotal</th></tr></thead>
+                    <tbody>
+        `;
+
+                data.detalles.forEach(d => {
+                    html += `<tr><td>${d.cantidad}</td><td>${d.producto}</td><td>Q${d.precio_unitario}</td><td>Q${d.subtotal}</td></tr>`;
+                });
+
+                html += `
+                    </tbody>
+                </table>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-6"><strong>Subtotal:</strong> Q${data.subtotal}</div>
+                <div class="col-6"><strong>Total:</strong> Q${data.total}</div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-6"><strong>Pagado:</strong> Q${data.pagado}</div>
+                <div class="col-6"><strong>Saldo Pendiente:</strong> Q${data.saldo}</div>
+            </div>
+        `;
+
+                // Mostrar abonos si es crédito
+                if (data.tipo_pago === 'credito' && data.abonos && data.abonos.length > 0) {
+                    html += `<hr><h6>Historial de Abonos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Fecha</th><th>Cantidad</th><th>Comentario</th></tr></thead>
+                            <tbody>`;
+                    data.abonos.forEach(a => {
+                        html += `<tr><td>${a.fecha}</td><td>Q${a.cantidad}</td><td>${a.comentario || '-'}</td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
+                }
+
+                // Botón de abono solo si es crédito y NO está pagado
+                if (data.tipo_pago === 'credito' && !data.esta_pagado) {
+                    html += `<div class="mt-3 text-center">
+                        <button class="btn btn-warning" onclick="abrirAbonos(${ventaId})">
+                            <i class="fas fa-money-bill"></i> Registrar Abono
+                        </button>
+                    </div>`;
+                } else if (data.tipo_pago === 'credito' && data.esta_pagado) {
+                    html += `<div class="mt-3 text-center text-success">
+                        <i class="fas fa-check-circle"></i> Esta venta ha sido pagada completamente
+                    </div>`;
+                }
+
+                $('#detalle_contenido').html(html);
+            });
+        }
+
+
+
+        function abrirAbonos(ventaId) {
+            $('#abono_venta_id').val(ventaId);
+            $('#abono_cantidad').val('');
+            $('#modalAbonos').modal('show');
+
+            // Cargar abonos existentes
+            $.get('/ventas/abonos/' + ventaId + '/', function (data) {
+                let html = '<ul class="list-group">';
+                data.forEach(a => {
+                    html += `<li class="list-group-item d-flex justify-content-between">
+                                <span>${a.fecha}</span>
+                                <span class="text-success">Q${a.cantidad}</span>
+                                <small>${a.comentario || ''}</small>
+                            </li>`;
+                });
+                if (data.length === 0) html += '<li class="list-group-item text-center">Sin abonos registrados</li>';
+                html += '</ul>';
+                $('#abonos_lista').html(html);
+            });
+        }
+
+        $('#formAbono').submit(function (e) {
+            e.preventDefault();
+            let ventaId = $('#abono_venta_id').val();
+            let fecha = $('#abono_fecha').val();
+            let cantidad = $('#abono_cantidad').val();
+            let comentario = $('textarea[name="comentario"]').val();
+
+            $.ajax({
+                url: '/ventas/abonos/registrar/',
+                method: 'POST',
+                data: JSON.stringify({ venta_id: ventaId, fecha_abono: fecha, cantidad: cantidad, comentario: comentario }),
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Abono registrado exitosamente');
+                        $('#modalAbonos').modal('hide');
+                        verDetalle(ventaId);
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                }
+            });
+        });
+
+
+        e.preventDefault();
+        let ventaId = $('#abono_venta_id').val();
+        let cantidad = $('#abono_cantidad').val();
+        let comentario = $('textarea[name="comentario"]').val();
+
+        $.ajax({
+            url: '/ventas/abonos/registrar/',
+            method: 'POST',
+            data: JSON.stringify({ venta_id: ventaId, cantidad: cantidad, comentario: comentario }),
+            contentType: 'application/json',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            success: function (response) {
+                if (response.success) {
+                    alert('Abono registrado exitosamente');
+                    $('#modalAbonos').modal('hide');
+                    verDetalle(ventaId);
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            }
+        });
+
+
+        function generarReporte(formato) {
+            var busqueda = $('input[name="busqueda"]').val();
+            var fecha_desde = $('input[name="fecha_desde"]').val();
+            var fecha_hasta = $('input[name="fecha_hasta"]').val();
+            var params = new URLSearchParams();
+            if (busqueda) params.append('busqueda', busqueda);
+            if (fecha_desde) params.append('fecha_desde', fecha_desde);
+            if (fecha_hasta) params.append('fecha_hasta', fecha_hasta);
+            window.location.href = '/ventas/exportar/' + formato + '/?' + params.toString();
+        }
+
+        function generarReporteDetalle(ventaId) {
+            window.open('/ventas/detalle/pdf/' + ventaId + '/', '_blank');
+        }
+
+        function imprimirDetalle() {
+            window.print();
+        }
+    </script>
+</body>
+
+</html>

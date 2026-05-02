@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entradas - Sistema de Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f3f6ff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white !important;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+            color: white;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .btn-action {
+            margin: 0 2px;
+        }
+
+        .imagen-preview {
+            max-width: 50px;
+            max-height: 50px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-header-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fas fa-box"></i> Inventario Empresa</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
+                                class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <div class="mb-3">
+            <a href="{% url 'home' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Regresar al Menú
+                Principal</a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-truck-ramp-box"></i> Registro de Entradas</h2>
+            <div>
+                <button class="btn btn-danger me-2" onclick="generarReporte('pdf')"><i class="fas fa-file-pdf"></i>
+                    Reporte PDF</button>
+                <button class="btn btn-success me-2" onclick="generarReporte('excel')"><i class="fas fa-file-excel"></i>
+                    Exportar Excel</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevaEntrada"><i
+                        class="fas fa-plus"></i> Nueva Entrada</button>
+            </div>
+        </div>
+
+        <!-- Filtros de búsqueda -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" name="busqueda" class="form-control"
+                            placeholder="Código, producto, categoría, proveedor, DUCA, ubicación..."
+                            value="{{ busqueda }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i>
+                            Buscar</button>
+                    </div>
+                    {% if busqueda or fecha_desde or fecha_hasta %}
+                    <div class="col-12">
+                        <a href="{% url 'listar_entradas' %}" class="btn btn-secondary btn-sm"><i
+                                class="fas fa-times"></i> Limpiar filtros</a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Selector de cantidad por página -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <label class="me-2">Mostrar:</label>
+                <select id="por_pagina" class="form-select form-select-sm d-inline-block w-auto"
+                    onchange="cambiarPorPagina()">
+                    <option value="20">20 registros</option>
+                    <option value="50">50 registros</option>
+                    <option value="100">100 registros</option>
+                </select>
+            </div>
+            <small>Mostrando {{ entradas|length }} de {{ entradas.paginator.count }} registros</small>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card">
+            <div class="card-header-custom">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Listado de Entradas</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>No. DUCA</th>
+                                <th>Categoría</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Proveedor</th>
+                                <th>Ubicación</th>
+                                <th>F.Ingreso</th>
+                                <th>Imagen</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entrada in entradas %}
+                            <tr>
+                                <td><strong>{{ entrada.codigo }}</strong></td>
+                                <td>{{ entrada.producto }}</td>
+                                <td>{{ entrada.no_duca|default:"-" }}</td>
+                                <td>{{ entrada.categoria }}</td>
+                                <td>{{ entrada.cantidad }}</td>
+                                <td>Q{{ entrada.precio_compra }}</td>
+                                <td>{{ entrada.proveedor|default:"-" }}</td>
+                                <td>{{ entrada.ubicacion|default:"-" }}</td>
+                                <td>{{ entrada.fecha_ingreso|date:"d/m/Y" }}</td>
+                                <td>{% if entrada.imagen %}<img src="{{ entrada.imagen.url }}" class="imagen-preview"
+                                        onclick="mostrarImagen('{{ entrada.imagen.url }}')">{% else %}-{% endif %}</td>
+                                <td>
+                                    <!-- Modal Editar Entrada <button class="btn btn-sm btn-warning" onclick="editarEntrada({{ entrada.id }})"><i
+                                            class="fas fa-edit"></i></button>-->
+                                    <button class="btn btn-sm btn-danger"
+                                        onclick="eliminarEntrada({{ entrada.id }}, '{{ entrada.codigo }} - {{ entrada.producto }}')"><i
+                                            class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center">No hay entradas registradas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if entradas.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if entradas.has_previous %}
+                        <li class="page-item"><a class="page-link"
+                                href="?page={{ entradas.previous_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}">Anterior</a>
+                        </li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ entradas.number }}</span></li>
+                        {% if entradas.has_next %}
+                        <li class="page-item"><a class="page-link"
+                                href="?page={{ entradas.next_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}">Siguiente</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Entrada -->
+    <div class="modal fade" id="modalNuevaEntrada" tabindex="-1" aria-labelledby="modalNuevaEntradaLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header modal-header-custom bg-primary text-white">
+                    <h5 class="modal-title" id="modalNuevaEntradaLabel">
+                        <i class="fas fa-plus-circle me-2"></i>Nueva Entrada
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <form id="formNuevaEntrada" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <!-- Fila 1: Código y Producto -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Código *</label>
+                                <input type="text" class="form-control" name="codigo" placeholder="Ej: PROD-001"
+                                    required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Producto *</label>
+                                <input type="text" class="form-control" name="producto"
+                                    placeholder="Nombre del artículo" required>
+                            </div>
+                        </div>
+
+                        <!-- Fila 2: DUCA y Categoría -->
+                        <!-- Fila 2: DUCA y Categoría -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">No. DUCA</label>
+                                <input type="text" class="form-control" name="no_duca" placeholder="Documento Aduanero">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Categoría *</label>
+                                <div class="input-group">
+                                    <select class="form-select" name="categoria" id="categoriaSelect" required>
+                                        <option value="">Seleccionar categoría...</option>
+                                        {% for cat in categorias %}
+                                        <option value="{{ cat.nombre }}">{{ cat.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                                        data-bs-target="#modalNuevaCategoria">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila 3: Cantidad, Precio y Fecha -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Cantidad *</label>
+                                <input type="number" class="form-control" name="cantidad" min="1" value="1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Precio Compra *</label>
+                                <div class="input-group">
+
+                                    <input type="number" step="0.01" class="form-control" name="precio_compra" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Fecha Ingreso *</label>
+                                <input type="date" class="form-control" name="fecha_ingreso" required>
+                            </div>
+                        </div>
+
+                        <!-- Fila 4: Proveedor y Ubicación -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Proveedor</label>
+                                <input type="text" class="form-control" name="proveedor"
+                                    placeholder="Nombre de empresa">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Ubicación *</label>
+                                <select class="form-select" id="ubicacion" name="ubicacion" required>
+                                    <option value="" selected disabled>Seleccione una bodega...</option>
+                                    <option value="balcones1">Balcones1 (Bodega principal)</option>
+                                    <option value="balcones2">Balcones2 (Segunda Bodega)</option>
+                                    <option value="balcones3">Balcones3 (Casa Justo)</option>
+                                    <option value="localdonamarta">Local Doña Marta (Bodega)</option>
+                                    <option value="casavalle">Casa Valle Bodega</option>
+                                    <option value="casafatima">Casa Fatima Bodega</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Fila 5: Comentario -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Comentario</label>
+                            <textarea class="form-control" name="comentario" rows="2"
+                                placeholder="Notas adicionales..."></textarea>
+                        </div>
+
+                        <!-- Fila 6: Imagen -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Imagen del Producto</label>
+                            <input type="file" class="form-control" name="imagen" accept="image/*">
+                            <div class="form-text">Formatos permitidos: JPG, PNG. Máximo 2MB.</div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-save me-2"></i>Guardar Entrada
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Categoría -->
+    <div class="modal fade" id="modalNuevaCategoria" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-tag"></i> Nueva Categoría</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formNuevaCategoria">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Categoría *</label>
+                            <input type="text" class="form-control" name="nombre" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Guardar Categoría</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Entrada 
+    <div class="modal fade" id="modalEditarEntrada" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title"><i class="fas fa-edit"></i> Editar Entrada</h5><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formEditarEntrada" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="entrada_id" id="edit_id">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label>Código *</label><input type="text" class="form-control"
+                                    name="codigo" id="edit_codigo" required></div>
+                            <div class="col-md-6 mb-3"><label>Producto *</label><input type="text" class="form-control"
+                                    name="producto" id="edit_producto" required></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label>No. DUCA</label><input type="text" class="form-control"
+                                    name="no_duca" id="edit_no_duca"></div>
+                            <div class="col-md-6 mb-3"><label>Categoría *</label><input type="text" class="form-control"
+                                    name="categoria" id="edit_categoria" required></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3"><label>Cantidad *</label><input type="number"
+                                    class="form-control" name="cantidad" id="edit_cantidad" min="1" required></div>
+                            <div class="col-md-4 mb-3"><label>Precio Compra *</label><input type="number" step="0.01"
+                                    class="form-control" name="precio_compra" id="edit_precio_compra" required></div>
+                            <div class="col-md-4 mb-3"><label>Fecha Ingreso *</label><input type="date"
+                                    class="form-control" name="fecha_ingreso" id="edit_fecha_ingreso" required></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label>Proveedor</label><input type="text" class="form-control"
+                                    name="proveedor" id="edit_proveedor"></div>
+                            <div class="col-md-6 mb-3"><label>Ubicación</label><input type="text" class="form-control"
+                                    name="ubicacion" id="edit_ubicacion" placeholder="Bodega 1, Bodega 2..."></div>
+                        </div>
+                        <div class="mb-3"><label>Comentario</label><textarea class="form-control" name="comentario"
+                                id="edit_comentario" rows="2"></textarea></div>
+                        <div class="mb-3"><label>Imagen</label><input type="file" class="form-control" name="imagen"
+                                accept="image/*">
+                            <div id="imagen_actual" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Cancelar</button><button type="submit"
+                            class="btn btn-primary">Actualizar</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    -->
+
+    <!-- Modal Eliminar -->
+    <div class="modal fade" id="modalEliminarEntrada" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirmar Eliminación</h5><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>¿Estás seguro?</p>
+                    <p><strong id="eliminar_nombre"></strong></p>
+                    <form id="formEliminarEntrada">{% csrf_token %}<input type="hidden" id="eliminar_id"><button
+                            type="submit" class="btn btn-danger">Sí, Eliminar</button><button type="button"
+                            class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button></form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Imagen -->
+    <div class="modal fade" id="modalImagen" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Imagen</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center"><img id="imagen_ampliada" src="" style="max-width:100%"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Seleccionar la cantidad por página actual
+        var porPaginaActual = "{{ por_pagina }}";
+        var selectPorPagina = document.getElementById('por_pagina');
+        if (selectPorPagina) {
+            for (var i = 0; i < selectPorPagina.options.length; i++) {
+                if (selectPorPagina.options[i].value === porPaginaActual) {
+                    selectPorPagina.options[i].selected = true;
+                    break;
+                }
+            }
+        }
+
+        function cambiarPorPagina() {
+            var valor = document.getElementById('por_pagina').value;
+            var url = new URL(window.location.href);
+            url.searchParams.set('por_pagina', valor);
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        function mostrarImagen(url) { $('#imagen_ampliada').attr('src', url); new bootstrap.Modal(document.getElementById('modalImagen')).show(); }
+
+        function editarEntrada(id) {
+            fetch('/entradas/editar/' + id + '/').then(r => r.json()).then(data => {
+                $('#edit_id').val(data.id); $('#edit_codigo').val(data.codigo); $('#edit_producto').val(data.producto);
+                $('#edit_no_duca').val(data.no_duca); $('#edit_categoria').val(data.categoria); $('#edit_cantidad').val(data.cantidad);
+                $('#edit_precio_compra').val(data.precio_compra); $('#edit_proveedor').val(data.proveedor); $('#edit_ubicacion').val(data.ubicacion);
+                $('#edit_fecha_ingreso').val(data.fecha_ingreso); $('#edit_comentario').val(data.comentario);
+                if (data.imagen_url) $('#imagen_actual').html('<small>Actual:</small><br><img src="' + data.imagen_url + '" style="max-width:100px">');
+                else $('#imagen_actual').html('');
+                new bootstrap.Modal(document.getElementById('modalEditarEntrada')).show();
+            });
+        }
+
+        function eliminarEntrada(id, nombre) { $('#eliminar_id').val(id); $('#eliminar_nombre').text(nombre); new bootstrap.Modal(document.getElementById('modalEliminarEntrada')).show(); }
+
+        function generarReporte(formato) {
+            var busqueda = document.querySelector('input[name="busqueda"]').value;
+            var fecha_desde = document.querySelector('input[name="fecha_desde"]').value;
+            var fecha_hasta = document.querySelector('input[name="fecha_hasta"]').value;
+            var params = new URLSearchParams();
+            if (busqueda) params.append('busqueda', busqueda);
+            if (fecha_desde) params.append('fecha_desde', fecha_desde);
+            if (fecha_hasta) params.append('fecha_hasta', fecha_hasta);
+            window.location.href = '/entradas/exportar/' + formato + '/?' + params.toString();
+        }
+
+        $('#formNuevaEntrada').submit(function (e) { e.preventDefault(); let fd = new FormData(this); fetch('/entradas/crear/', { method: 'POST', body: fd, headers: { 'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val() } }).then(r => r.json()).then(d => { if (d.success) location.reload(); else alert('Error: ' + d.error) }); });
+        $('#formEditarEntrada').submit(function (e) { e.preventDefault(); let id = $('#edit_id').val(); let fd = new FormData(this); fetch('/entradas/editar/' + id + '/', { method: 'POST', body: fd, headers: { 'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val() } }).then(r => r.json()).then(d => { if (d.success) location.reload(); else alert('Error: ' + d.error) }); });
+        $('#formEliminarEntrada').submit(function (e) { e.preventDefault(); let id = $('#eliminar_id').val(); fetch('/entradas/eliminar/' + id + '/', { method: 'POST', headers: { 'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val() } }).then(r => r.json()).then(d => { if (d.success) location.reload(); else alert('Error: ' + d.error) }); });
+
+
+        // Nueva categoría desde el modal
+        $('#formNuevaCategoria').submit(function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            $.ajax({
+                url: '/categorias/crear/',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        $('#categoriaSelect').append(`<option value="${response.nombre}">${response.nombre}</option>`);
+                        $('#categoriaSelect').val(response.nombre);
+                        $('#modalNuevaCategoria').modal('hide');
+                        $('#formNuevaCategoria')[0].reset();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

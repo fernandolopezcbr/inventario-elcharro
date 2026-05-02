@@ -1,0 +1,29 @@
+/* Color de encabezado */
+#header {
+    background: #003B5C !important;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: #005F8D !important;
+}
+
+/* Botones */
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input {
+    background: #005F8D !important;
+}
+
+.button:hover,
+input[type=submit]:hover {
+    background: #003B5C !important;
+}
+
+#header #branding h1 {
+    background: url('/static/img/logo_charro.png') no-repeat left center;
+    background-size: contain;
+    padding-left: 50px;
+}

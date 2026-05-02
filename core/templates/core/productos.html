@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Sistema de Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f3f6ff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white !important;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        /* Encabezado de tabla color #005F8D */
+        .table thead th {
+            background-color: #005F8D !important;
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .estado-circle {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .circle-danger {
+            background-color: #dc3545;
+        }
+
+        .circle-warning {
+            background-color: #ffc107;
+        }
+
+        .circle-success {
+            background-color: #28a745;
+        }
+
+        .table-striped>tbody>tr:nth-of-type(odd) {
+            background-color: rgba(0, 95, 141, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fas fa-box"></i> Inventario Empresa</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
+                                class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <div class="mb-3">
+            <a href="{% url 'home' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Regresar al Menú
+                Principal</a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-boxes"></i> Movimientos en Inventario de Productos</h2>
+            <div>
+                <button class="btn btn-danger me-2" onclick="generarReporte('pdf')"><i class="fas fa-file-pdf"></i>
+                    Reporte PDF</button>
+                <button class="btn btn-success" onclick="generarReporte('excel')"><i class="fas fa-file-excel"></i>
+                    Exportar Excel</button>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3" id="filtroForm">
+                    <div class="col-md-8">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" name="busqueda" class="form-control"
+                            placeholder="Código, producto, categoría, proveedor..." value="{{ busqueda }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Ubicación</label>
+                        <select name="ubicacion" class="form-select" id="ubicacionSelect">
+                            <option value="">Todas las ubicaciones</option>
+                            {% for u in ubicaciones %}
+                            <option value="{{ u }}">{{ u }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Buscar</button>
+                        {% if busqueda or ubicacion_filtro %}
+                        <a href="{% url 'listar_productos' %}" class="btn btn-secondary"><i class="fas fa-times"></i>
+                            Limpiar</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Selector de cantidad por página -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <label class="me-2">Mostrar:</label>
+                <select id="por_pagina" class="form-select form-select-sm d-inline-block w-auto"
+                    onchange="cambiarPorPagina()">
+                    <option value="20">20 registros</option>
+                    <option value="50">50 registros</option>
+                    <option value="100">100 registros</option>
+                </select>
+            </div>
+            <small>Mostrando {{ productos|length }} de {{ productos.paginator.count }} registros</small>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Cantidad</th>
+                                <th>Estado</th>
+                                <th>Proveedor</th>
+                                <th>Ubicación</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for producto in productos %}
+                            <tr>
+                                <td>{{ producto.codigo }}
+                </div>
+                </td>
+                <td>{{ producto.producto }}
+            </div>
+            </td>
+            <td>{{ producto.categoria }}
+        </div>
+        </td>
+        <td>{{ producto.cantidad }}
+    </div>
+    </td>
+    <td>
+        <span class="estado-circle circle-{{ producto.estado_color }}"></span>
+        <span class="text-{{ producto.estado_color }}">{{ producto.estado_texto }}</span>
+        </div>
+    <td>{{ producto.proveedor }}</div>
+    </td>
+    <td>{{ producto.ubicacion }}</div>
+    </td>
+    <td>
+        <button class="btn btn-sm btn-info"
+            onclick="abrirMovimiento('{{ producto.codigo }}', '{{ producto.producto }}', '{{ producto.categoria }}', '{{ producto.proveedor }}', '{{ producto.ubicacion }}')">
+            <i class="fas fa-exchange-alt"></i> Movimiento
+        </button>
+        </div>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="text-center">No hay productos registrados</div>
+        </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if productos.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if productos.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ productos.previous_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if ubicacion_filtro %}&ubicacion={{ ubicacion_filtro }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active"><span class="page-link">{{ productos.number }}</span></li>
+
+                {% if productos.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ productos.next_page_number }}&por_pagina={{ por_pagina }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if ubicacion_filtro %}&ubicacion={{ ubicacion_filtro }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        </div>
+        </div>
+        </div>
+
+        <!-- Modal Movimiento -->
+        <div class="modal fade" id="modalMovimiento" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Registrar Movimiento</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="formMovimiento">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label>Código</label><input type="text" class="form-control"
+                                        name="producto_codigo" id="mov_codigo" readonly></div>
+                                <div class="col-md-6 mb-3"><label>Producto</label><input type="text"
+                                        class="form-control" name="producto_nombre" id="mov_producto" readonly></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label>Categoría</label><input type="text"
+                                        class="form-control" name="categoria" id="mov_categoria" readonly></div>
+                                <div class="col-md-6 mb-3"><label>Proveedor</label><input type="text"
+                                        class="form-control" name="proveedor" id="mov_proveedor" readonly></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label>Cantidad</label><input type="number"
+                                        class="form-control" name="cantidad" id="mov_cantidad" min="1" required></div>
+                                <div class="col-md-6 mb-3"><label>Tipo</label>
+                                    <select class="form-select" name="tipo" id="mov_tipo" required>
+                                        <option value="cambio_ubicacion">Cambio de Ubicación</option>
+                                        <option value="ajuste">Ajuste de Stock</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ubicación Origen *</label>
+                                    <input type="text" class="form-control" name="ubicacion_origen" id="mov_origen"
+                                        readonly style="font-weight: bold;">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ubicación Destino *</label>
+                                    <select class="form-select" name="ubicacion_destino" id="mov_destino" required>
+                                        <option value="">Seleccionar ubicación destino</option>
+                                        <option value="balcones1">Balcones1 (Bodega principal)</option>
+                                        <option value="balcones2">Balcones2 (Segunda Bodega)</option>
+                                        <option value="balcones3">Balcones3 (Casa Justo)</option>
+                                        <option value="localdonamarta">Local Doña Marta (Bodega)</option>
+                                        <option value="casavalle">Casa Valle Bodega</option>
+                                        <option value="casafatima">Casa Fatima Bodega</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3"><label>Motivo</label><textarea class="form-control" name="motivo" rows="2"
+                                    required></textarea></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Registrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Seleccionar la ubicación actual
+            var ubicacionActual = "{{ ubicacion_filtro }}";
+            var selectUbicacion = document.getElementById('ubicacionSelect');
+            if (selectUbicacion && ubicacionActual) {
+                for (var i = 0; i < selectUbicacion.options.length; i++) {
+                    if (selectUbicacion.options[i].value === ubicacionActual) {
+                        selectUbicacion.options[i].selected = true;
+                        break;
+                    }
+                }
+            }
+
+            // Seleccionar la cantidad por página actual
+            var porPaginaActual = "{{ por_pagina }}";
+            var selectPorPagina = document.getElementById('por_pagina');
+            if (selectPorPagina) {
+                for (var i = 0; i < selectPorPagina.options.length; i++) {
+                    if (selectPorPagina.options[i].value === porPaginaActual) {
+                        selectPorPagina.options[i].selected = true;
+                        break;
+                    }
+                }
+            }
+
+            function cambiarPorPagina() {
+                var valor = document.getElementById('por_pagina').value;
+                var url = new URL(window.location.href);
+                url.searchParams.set('por_pagina', valor);
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            }
+
+            function abrirMovimiento(codigo, producto, categoria, proveedor, ubicacion) {
+                $('#mov_codigo').val(codigo);
+                $('#mov_producto').val(producto);
+                $('#mov_categoria').val(categoria);
+                $('#mov_proveedor').val(proveedor);
+                $('#mov_origen').val(ubicacion);
+                $('#mov_destino').val('');
+                $('#mov_cantidad').val(1);
+                new bootstrap.Modal(document.getElementById('modalMovimiento')).show();
+            }
+
+            $('#formMovimiento').submit(function (e) {
+                e.preventDefault();
+                var fd = new FormData(this);
+                fetch('/productos/movimiento/', {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Movimiento registrado');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    });
+            });
+
+            function generarReporte(formato) {
+                var busqueda = $('input[name="busqueda"]').val();
+                var ubicacion = $('select[name="ubicacion"]').val();
+                var params = new URLSearchParams();
+                if (busqueda) params.append('busqueda', busqueda);
+                if (ubicacion) params.append('ubicacion', ubicacion);
+                window.location.href = '/productos/' + formato + '/?' + params.toString();
+            }
+        </script>
+</body>
+
+</html>

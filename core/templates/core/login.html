@@ -1,0 +1,288 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Importaciones EL CHARRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003B5C;
+            --primary-light: #005F8D;
+            --accent: #D4AF37;
+            /* Dorado */
+            --accent-light: #f1d57d;
+            --white: #ffffff;
+            --bg-gradient: linear-gradient(135deg, #003B5C 0%, #001f33 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Fondo con tu azul institucional profundo */
+            background: var(--bg-gradient);
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Marcas de agua decorativas */
+        .watermark {
+            position: absolute;
+            font-size: 10vw;
+            font-weight: 700;
+            color: rgba(212, 175, 55, 0.03);
+            /* Dorado muy tenue */
+            transform: rotate(-20deg);
+            white-space: nowrap;
+            z-index: 0;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1100px;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 30px;
+            /* Borde sutil dorado */
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- LADO IZQUIERDO: FORMULARIO --- */
+        .login-section {
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .brand-logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+        }
+
+        h2 {
+            font-weight: 300;
+            margin-bottom: 35px;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            color: var(--accent);
+            /* Dorado en el subtítulo */
+            text-transform: uppercase;
+        }
+
+        form {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 22px;
+            border: 1px solid transparent;
+            border-radius: 30px;
+            background: #ffffff;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border-radius: 30px;
+            border: none;
+            /* Botón Dorado */
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* --- LADO DERECHO: INFORMACIÓN --- */
+        .info-section {
+            flex: 1.2;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid rgba(212, 175, 55, 0.1);
+            background: rgba(0, 59, 92, 0.4);
+        }
+
+        .info-section h1 {
+            font-size: 2.8rem;
+            line-height: 1;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .info-section h1 span {
+            display: block;
+            font-weight: 300;
+            font-size: 1.4rem;
+            color: var(--accent);
+            /* Dorado en "Importaciones" */
+            margin-bottom: 5px;
+        }
+
+        .services {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+            border-left: 4px solid var(--accent);
+            /* Línea dorada lateral */
+            padding-left: 20px;
+        }
+
+        .contact-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #e0e0e0;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .contact-item span {
+            color: var(--accent);
+            /* Iconos en dorado */
+        }
+
+        .error-msg {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid rgba(255, 71, 87, 0.4);
+            color: #ffbabb;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-top: 25px;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                width: 95%;
+                margin: 20px;
+            }
+
+            .info-section {
+                border-left: none;
+                border-top: 1px solid rgba(212, 175, 55, 0.1);
+                padding: 40px 30px;
+            }
+
+            .info-section h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="container">
+        <div class="login-section">
+            <img src="{% static 'img/logo_charro.png' %}" alt="Importaciones El Charro" class="brand-logo">
+
+            <h2>Control de Inventario</h2>
+
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Usuario" required>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Contraseña" required>
+                </div>
+
+                <button type="submit" class="btn-login">Ingresar</button>
+            </form>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="error-msg">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="info-section">
+            <h1><span>Importaciones</span>EL CHARRO</h1>
+
+            <p class="services">
+                Venta de Herrajes, Elásticos, Velcro, Adornos, Pegamento, Tintes para calzado. <br>
+                <strong>Ventas por Mayor y Menor.</strong>
+            </p>
+
+            <div class="contact-card">
+                <div class="contact-item">
+                    <span>📍</span> 3 Calle 0-70 Colonia Balcones de Minerva lote 19, Zona 10 Quetzaltenango, Guatemala
+                </div>
+                <div class="contact-item">
+                    <span>📞</span> Tel: 7765-2468 | 5903-3475
+                </div>
+                <div class="contact-item">
+                    <span>✉️</span> alcharro1@gmail.com
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

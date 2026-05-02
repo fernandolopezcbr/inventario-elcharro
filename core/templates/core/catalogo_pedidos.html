@@ -1,0 +1,475 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos - Catálogo | El Charro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f3f6ff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #003B5C 0%, #005F8D 100%);
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white !important;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        /* Cards de productos */
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        /* Logo blanco en el navbar */
+        .logo-nav {
+            height: 45px;
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .navbar-custom .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .navbar-custom .nav-link:hover {
+            color: #ffffff !important;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        /**/
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .product-image {
+            height: 180px;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-image .no-image {
+            color: #adb5bd;
+            font-size: 3rem;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #003B5C;
+            margin-bottom: 5px;
+        }
+
+        .product-ref {
+            font-size: 0.7rem;
+            color: #005F8D;
+            margin-bottom: 8px;
+        }
+
+        .product-desc {
+            font-size: 0.75rem;
+            color: #6c757d;
+            line-height: 1.3;
+        }
+
+        /* Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        /* Carrito flotante */
+        .cart-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 380px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1050;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .cart-header {
+            background: #003B5C;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .cart-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 10px 0;
+        }
+
+        .cart-footer {
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .cart-toggle {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: #005F8D;
+            color: white;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1040;
+            transition: all 0.3s;
+        }
+
+        .cart-toggle:hover {
+            background: #003B5C;
+            transform: scale(1.05);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'img/logo_charro.png' %}"
+                    alt="El Charro Logo" class="logo-nav"></i> El Charro
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'historial_pedidos' %}">
+                            <i class="fas fa-history"></i> Historial Pedidos
+                            {% if pendientes_count > 0 %}
+                            <span class="badge bg-warning ms-1">{{ pendientes_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i>
+                            Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
+                                class="fas fa-sign-out-alt"></i> Salir</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <div class="mb-3">
+            <a href="{% url 'home' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Regresar</a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-store"></i> Catálogo de Productos</h2>
+        </div>
+
+        <!-- Filtro de búsqueda unificado -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="form-label">Buscar producto</label>
+                        <input type="text" id="filtro_busqueda" class="form-control"
+                            placeholder="Buscar por código, producto o proveedor...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid de productos -->
+        <div class="products-grid" id="productsGrid">
+            {% for p in productos %}
+            <div class="product-card" data-codigo="{{ p.codigo }}" data-producto="{{ p.producto }}"
+                data-proveedor="{{ p.proveedor }}"
+                onclick="abrirModal('{{ p.codigo }}', '{{ p.producto }}', '{{ p.categoria }}', '{{ p.proveedor }}', '{{ p.descripcion|escapejs }}', '{% if p.imagen_catalogo %}{{ p.imagen_catalogo }}{% endif %}', {{ p.ubicaciones|safe }})">
+                <div class="product-image">
+                    {% if p.imagen_catalogo %}
+                    <img src="{{ p.imagen_catalogo }}" alt="{{ p.producto }}">
+                    {% else %}
+                    <div class="no-image"><i class="fas fa-image"></i></div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3>{{ p.producto }}</h3>
+                    <div class="product-ref">Cod: {{ p.codigo }} </div>
+                    <div class="product-desc">{{ p.descripcion|default:""|truncatechars:60 }}</div>
+                    <div>{{ p.proveedor }}</div>
+                    <small class="text-muted">Stock total: {{ p.stock_total }} unidades</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Carrito flotante -->
+    <div class="cart-toggle" id="cartToggle">
+        <i class="fas fa-shopping-cart fa-lg"></i>
+        <span class="cart-badge" id="cartCount">0</span>
+    </div>
+
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> Mi Carrito</h5>
+            <button class="btn-close btn-close-white" id="closeCart"></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p class="text-muted text-center">No hay productos en el carrito</p>
+        </div>
+        <div class="cart-footer">
+            <div class="d-flex justify-content-between mb-2">
+                <strong>Total:</strong>
+                <strong id="cartTotal">Q0.00</strong>
+            </div>
+            <a href="{% url 'checkout_pedido' %}" class="btn btn-primary w-100">Proceder al Checkout</a>
+        </div>
+    </div>
+
+    <!-- Modal Producto -->
+    <div class="modal fade" id="modalProducto" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalProductoNombre"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="product-image-modal" id="modalImagen"
+                                style="height:200px; background:#f0f2f5; display:flex; align-items:center; justify-content:center; border-radius:12px;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <p><strong>Código:</strong> <span id="modalCodigo"></span></p>
+                            <p><strong>Categoría:</strong> <span id="modalCategoria"></span></p>
+                            <p><strong>Proveedor:</strong> <span id="modalProveedor"></span></p>
+                            <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>Disponibilidad por Ubicación</h6>
+                    <div id="ubicacionesList" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let carrito = JSON.parse(localStorage.getItem('carrito_pedidos')) || [];
+
+        function actualizarCarrito() {
+            localStorage.setItem('carrito_pedidos', JSON.stringify(carrito));
+            $('#cartCount').text(carrito.length);
+
+            let itemsHtml = '';
+            let total = 0;
+            carrito.forEach((item, idx) => {
+                let subtotal = item.cantidad * item.precio;
+                total += subtotal;
+                itemsHtml += `
+                    <div class="cart-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>${item.producto}</strong><br>
+                                <small>${item.codigo} - ${item.ubicacion}</small><br>
+                                <small>Cant: ${item.cantidad} x Q${item.precio}</small>
+                            </div>
+                            <div>
+                                <span>Q${subtotal.toFixed(2)}</span>
+                                <button class="btn btn-sm btn-danger ms-2" onclick="eliminarDelCarrito(${idx})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            if (carrito.length === 0) itemsHtml = '<p class="text-muted text-center">No hay productos en el carrito</p>';
+            $('#cartItems').html(itemsHtml);
+            $('#cartTotal').text('Q' + total.toFixed(2));
+        }
+
+        function eliminarDelCarrito(index) {
+            carrito.splice(index, 1);
+            actualizarCarrito();
+        }
+
+        function agregarAlCarrito(codigo, producto, proveedor, precio, cantidad, ubicacion) {
+            carrito.push({
+                codigo: codigo,
+                producto: producto,
+                proveedor: proveedor,  // El proveedor se guarda
+                precio: precio,
+                cantidad: cantidad,
+                ubicacion: ubicacion
+
+            });
+            actualizarCarrito();
+            $('#modalProducto').modal('hide');
+            alert('Producto agregado al carrito');
+        }
+
+        function abrirModal(codigo, producto, categoria, proveedor, descripcion, imagen, ubicaciones) {
+            $('#modalProductoNombre').text(producto + ' - ' + proveedor);
+            $('#modalCodigo').text(codigo);
+            $('#modalCategoria').text(categoria);
+            $('#modalProveedor').text(proveedor);
+            $('#modalDescripcion').text(descripcion || '');
+
+            if (imagen) {
+                $('#modalImagen').html(`<img src="${imagen}" style="max-width:100%; max-height:180px; object-fit:cover;">`);
+            } else {
+                $('#modalImagen').html('<i class="fas fa-image fa-3x text-muted"></i>');
+            }
+
+            // Mostrar ubicaciones disponibles
+            let html = '<div class="list-group">';
+            if (ubicaciones && ubicaciones.length > 0) {
+                ubicaciones.forEach(ub => {
+                    if (ub.cantidad > 0) {
+                        html += `
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${ub.ubicacion}</strong><br>
+                                        <small>Stock disponible: ${ub.cantidad} unidades</small>
+                                    </div>
+                                    <div>
+                                        <input type="number" class="form-control form-control-sm cantidad-input" style="width:80px" min="1" max="${ub.cantidad}" value="1">
+                                        <button class="btn btn-sm btn-primary mt-1 agregar-btn" data-ubicacion="${ub.ubicacion}" data-stock="${ub.cantidad}">Agregar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                html += '<div class="list-group-item text-muted">No hay stock disponible en ninguna ubicación</div>';
+            }
+            html += '</div>';
+            $('#ubicacionesList').html(html);
+
+            // Eventos para botones agregar
+            $('.agregar-btn').off('click').on('click', function () {
+                let ubicacion = $(this).data('ubicacion');
+                let stock = $(this).data('stock');
+                let cantidad = $(this).closest('.list-group-item').find('.cantidad-input').val();
+                if (cantidad > stock) {
+                    alert('No hay suficiente stock en esta ubicación');
+                    return;
+                }
+                let precio = 0;
+                agregarAlCarrito(codigo, producto, proveedor, precio, parseInt(cantidad), ubicacion);
+            });
+
+            $('#modalProducto').modal('show');
+        }
+
+        // Filtro de búsqueda unificado
+        $('#filtro_busqueda').on('keyup', function () {
+            let busqueda = $(this).val().toLowerCase();
+
+            $('.product-card').each(function () {
+                let codigo = $(this).data('codigo').toLowerCase();
+                let producto = $(this).data('producto').toLowerCase();
+                let proveedor = $(this).data('proveedor').toLowerCase();
+
+                let show = (busqueda === '' ||
+                    codigo.includes(busqueda) ||
+                    producto.includes(busqueda) ||
+                    proveedor.includes(busqueda));
+                $(this).toggle(show);
+            });
+        });
+
+        // Carrito sidebar
+        $('#cartToggle').click(function () {
+            $('#cartSidebar').addClass('open');
+        });
+        $('#closeCart').click(function () {
+            $('#cartSidebar').removeClass('open');
+        });
+
+        actualizarCarrito();
+    </script>
+</body>
+
+</html>

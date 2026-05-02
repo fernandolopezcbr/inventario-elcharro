@@ -1,0 +1,449 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Catálogo Digital - El Charro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-primary: #003B5C;
+            --brand-accent: #D4AF37;
+            --bg-dark: #071626;
+            --white: #ffffff;
+            --light-gray: #f4f7f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        /* --- NAVBAR RESPONSIVE --- */
+        .navbar-custom {
+            background: var(--brand-primary);
+            padding: 10px 0;
+            border-bottom: 3px solid var(--brand-accent);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .logo-nav {
+            height: 35px;
+            margin-right: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-nav-outline {
+            color: white;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-nav-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+
+        .btn-pdf {
+            color: var(--brand-accent);
+            border-color: var(--brand-accent);
+        }
+
+        .btn-pdf:hover {
+            background: var(--brand-accent);
+            color: var(--brand-primary);
+        }
+
+        /* --- CONTENEDOR FLIPBOOK RESPONSIVE --- */
+        .flipbook-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background: radial-gradient(circle, #0d2b45 0%, #071626 100%);
+            overflow: hidden;
+        }
+
+        .book {
+            position: relative;
+            width: 100%;
+            max-width: 1050px;
+            height: 70vh;
+            /* Ajuste dinámico de altura */
+            min-height: 500px;
+            perspective: 2000px;
+            transition: all 0.5s ease;
+        }
+
+        .page {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            /* Permite scroll si el contenido desborda en móvil */
+        }
+
+        .page-left {
+            left: 0;
+            border-radius: 10px 0 0 10px;
+            border-right: 1px solid #ddd;
+        }
+
+        .page-right {
+            right: 0;
+            border-radius: 0 10px 10px 0;
+            border-left: 1px solid #ddd;
+        }
+
+        /* --- ESTILOS INTERNOS --- */
+        .cover {
+            background-color: var(--brand-primary);
+            color: white;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .cover-border {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid var(--brand-accent);
+            pointer-events: none;
+        }
+
+        .cover h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 15px 0;
+        }
+
+        .inner-header {
+            background: var(--brand-primary);
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cat-name {
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--brand-accent);
+            text-transform: uppercase;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .product-card {
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .product-image-box {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        .product-image-box img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .price-tag {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--brand-accent);
+            color: var(--brand-primary);
+            font-weight: 900;
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .product-card h3 {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--brand-primary);
+            height: 24px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .product-spec {
+            background: var(--light-gray);
+            font-size: 0.55rem;
+            padding: 2px 4px;
+            border-left: 2px solid var(--brand-accent);
+            margin-bottom: 2px;
+        }
+
+        /* --- CONTROLES --- */
+        .nav-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--brand-primary);
+        }
+
+        .nav-btn {
+            background: var(--brand-accent);
+            color: var(--brand-primary);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 900;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .page-counter {
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        /* --- MEDIA QUERIES (RESPONSIVE) --- */
+        @media (max-width: 768px) {
+            .book {
+                height: 80vh;
+                max-width: 500px;
+            }
+
+            .page {
+                width: 100%;
+                left: 0;
+                right: 0;
+                border-radius: 10px;
+            }
+
+            .page-right {
+                display: none;
+            }
+
+            /* En móvil mostramos una por una */
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cover h1 {
+                font-size: 1.2rem;
+            }
+
+            .cat-name {
+                font-size: 0.8rem;
+            }
+
+            .navbar-custom span {
+                display: none;
+            }
+
+            /* Ocultar "El Charro" texto en móviles pequeños */
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-btn {
+                padding: 8px 10px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-custom">
+        <div class="container-nav">
+            <a href="{% url 'home' %}" style="text-decoration: none; display: flex; align-items: center; color: white;">
+                <img src="{% static 'img/logo_charro.png' %}" alt="Logo" class="logo-nav">
+                <span style="font-weight: 900; letter-spacing: 1px;">EL CHARRO</span>
+            </a>
+            <div class="nav-links">
+                <!-- Botón de Regresar al Menú -->
+                <a href="{% url 'home' %}" class="btn-nav-outline">
+                    <i class="fas fa-home"></i> MENÚ
+                </a>
+                <a href="{% url 'exportar_catalogo_pdf' %}" class="btn-nav-outline btn-pdf" target="_blank">
+                    <i class="fas fa-file-pdf"></i> descargar PDF
+                </a>
+                <a href="{% url 'logout' %}"
+                    style="color: white; text-decoration: none; font-size: 0.7rem; opacity: 0.7;"> <i
+                        class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flipbook-container">
+        <div class="book" id="book"></div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevPage"><i class="fas fa-chevron-left"></i></button>
+        <div class="page-counter" id="pageCounter"></div>
+        <button class="nav-btn" id="nextPage"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        const categorias = {{ categorias_json| safe }};
+        let currentPage = 0;
+        let pages = [];
+        const isMobile = window.innerWidth <= 768;
+
+        function buildPages() {
+            pages = [];
+            // 1. Portada
+            pages.push({
+                content: `
+                    <div class="cover">
+                        <div class="cover-border"></div>
+                        <img src="{% static 'img/logo_charro.png' %}" style="width:120px;">
+                        <h1>IMPORTACIONES EL CHARRO</h1>
+                        <p style="font-size:0.7rem; color:var(--brand-accent);">CATÁLOGO DIGITAL </p>
+                    </div>`
+            });
+
+            // 2. Productos
+            for (const [catNombre, productos] of Object.entries(categorias)) {
+                if (productos.length === 0) continue;
+                const itemsPerPage = 9;
+                for (let i = 0; i < productos.length; i += itemsPerPage) {
+                    const pageProducts = productos.slice(i, i + itemsPerPage);
+                    pages.push({
+                        content: `
+                            <div class="page-content">
+                                <div class="inner-header">
+                                    <div class="cat-name">${catNombre}</div>
+                                    <img src="{% static 'img/logo_charro.png' %}" style="height:20px; filter:brightness(0) invert(1);">
+                                </div>
+                                <div class="products-grid">
+                                    ${pageProducts.map(p => `
+                                        <div class="product-card">
+                                            <div class="price-tag"> ${p.precio || ''}</div>
+                                            <div class="product-image-box">
+                                                ${p.imagen_catalogo ? `<img src="${p.imagen_catalogo}">` : `<i class="fas fa-image" style="color:#eee; font-size:1.5rem;"></i>`}
+                                            </div>
+                                            <h3>${p.nombre.substring(0, 25)}</h3>
+                                            <div class="product-spec">REF: ${p.codigo}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>`
+                    });
+                }
+            }
+        }
+
+        function renderBook() {
+            const book = document.getElementById('book');
+            book.innerHTML = '';
+
+            if (window.innerWidth <= 768) {
+                // Renderizado Móvil (1 página a la vez)
+                const p = document.createElement('div');
+                p.className = 'page';
+                p.style.width = '100%';
+                p.innerHTML = pages[currentPage].content;
+                book.appendChild(p);
+                document.getElementById('pageCounter').innerHTML = `PÁG ${currentPage + 1} / ${pages.length}`;
+            } else {
+                // Renderizado Desktop (2 páginas)
+                const leftIdx = currentPage * 2;
+                const rightIdx = leftIdx + 1;
+
+                if (leftIdx < pages.length) {
+                    const lp = document.createElement('div');
+                    lp.className = 'page page-left';
+                    lp.innerHTML = pages[leftIdx].content;
+                    book.appendChild(lp);
+                }
+                if (rightIdx < pages.length) {
+                    const rp = document.createElement('div');
+                    rp.className = 'page page-right';
+                    rp.innerHTML = pages[rightIdx].content;
+                    book.appendChild(rp);
+                }
+                document.getElementById('pageCounter').innerHTML = `VISTA ${currentPage + 1} / ${Math.ceil(pages.length / 2)}`;
+            }
+        }
+
+        buildPages();
+        renderBook();
+
+        window.addEventListener('resize', () => { location.reload(); }); // Recargar para ajustar modo móvil/desktop
+
+        document.getElementById('nextPage').onclick = () => {
+            const limit = window.innerWidth <= 768 ? pages.length - 1 : Math.ceil(pages.length / 2) - 1;
+            if (currentPage < limit) { currentPage++; renderBook(); }
+        };
+        document.getElementById('prevPage').onclick = () => {
+            if (currentPage > 0) { currentPage--; renderBook(); }
+        };
+    </script>
+</body>
+
+</html>

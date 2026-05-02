@@ -1,0 +1,337 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo El Charro 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003B5C;
+            --accent: #D4AF37;
+            --bg-gray: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+
+            @bottom-center {
+                content: "Página " counter(page);
+                font-family: 'Montserrat', sans-serif;
+                font-size: 9px;
+                color: #888;
+                padding-bottom: 5mm;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #ffffff;
+        }
+
+        /* --- PORTADA --- */
+        .cover {
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 297mm;
+            position: relative;
+            page-break-after: always;
+            padding: 20mm;
+        }
+
+        .cover-border {
+            position: absolute;
+            top: 8mm;
+            left: 8mm;
+            right: 8mm;
+            bottom: 8mm;
+            border: 2px solid var(--accent);
+        }
+
+        .cover-logo {
+            width: 220px;
+            margin-bottom: 25px;
+            z-index: 2;
+        }
+
+        .cover h1 {
+            font-size: 36px;
+            font-weight: 900;
+            z-index: 2;
+            text-transform: uppercase;
+        }
+
+        .cover h2 {
+            font-size: 16px;
+            color: var(--accent);
+            letter-spacing: 4px;
+            z-index: 2;
+            margin-top: 5px;
+        }
+
+        .cover-divider {
+            width: 60px;
+            height: 4px;
+            background: var(--accent);
+            margin: 20px 0;
+            z-index: 2;
+        }
+
+        .cover-slogan {
+            font-size: 13px;
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            z-index: 2;
+        }
+
+        .contact-box-cover {
+            border: 1.5px solid var(--accent);
+            border-radius: 15px;
+            padding: 20px 40px;
+            z-index: 2;
+            background: rgba(0, 59, 92, 0.4);
+        }
+
+        .contact-box-cover p {
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        /* --- ENCABEZADO GRANDE (OPTIMIZADO PARA ESPACIO) --- */
+        .header {
+            background-color: var(--primary);
+            width: 100%;
+            padding: 0 15mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            height: 24mm;
+            /* Altura fija controlada */
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo-mini {
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .header-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--accent);
+            text-transform: uppercase;
+            line-height: 1;
+            padding-bottom: 2px;
+            border-bottom: 5px solid var(--accent);
+        }
+
+        .header-right {
+            text-align: right;
+            font-size: 10px;
+            line-height: 1.3;
+        }
+
+        .header-right strong {
+            color: var(--accent);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        /* --- GRID 3x3 AJUSTADO MATEMÁTICAMENTE --- */
+        .products-section {
+            width: 100%;
+            height: 297mm;
+            page-break-before: always;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .products-grid-container {
+            padding: 4mm 8mm;
+            /* Padding superior reducido para ganar espacio */
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 70mm;
+            /* REDUCIDO para asegurar que 3 filas quepan (3x70=210mm) */
+            gap: 4mm;
+        }
+
+        .product-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            page-break-inside: avoid;
+        }
+
+        .product-image-box {
+            height: 34mm;
+            /* REDUCIDO de 38mm a 34mm para compensar el header grande */
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            position: relative;
+        }
+
+        .product-image-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .price-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--accent);
+            color: var(--primary);
+            padding: 3px 8px;
+            font-weight: 900;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .product-details {
+            padding: 8px 10px;
+            flex-grow: 1;
+        }
+
+        .product-details h3 {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin-bottom: 4px;
+            height: 26px;
+            /* Altura estricta para el título */
+            overflow: hidden;
+        }
+
+        .specs {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .spec-item {
+            background: var(--bg-gray);
+            font-size: 8px;
+            padding: 2px 6px;
+            border-left: 3px solid var(--accent);
+            color: #444;
+            font-weight: 600;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 3mm 15mm;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #aaa;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PORTADA -->
+    <div class="cover">
+        <div class="cover-border"></div>
+        <img src="{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo_charro.png' %}" alt="Logo"
+            class="cover-logo">
+        <h1>IMPORTACIONES EL CHARRO</h1>
+        <h2>CATÁLOGO DE PRODUCTOS</h2>
+        <div class="cover-divider"></div>
+
+        <div class="cover-slogan">
+            Venta de Herrajes, Elásticos, Velcro, Adornos, Pegamento, Tintes para calzado.<br>
+            <strong>Ventas por Mayor y Menor</strong>
+        </div>
+
+        <div class="contact-box-cover">
+            <p>3 Calle 0-70 Col. Balcones de Minerva, Zona 10 Quetzaltenango</p>
+            <p>7765-2468 | 5903-3475 &nbsp;&nbsp;&nbsp; alcharro1@gmail.com</p>
+        </div>
+    </div>
+
+    <!-- SECCIONES DE PRODUCTOS -->
+    {% for cat_nombre, productos in categorias.items %}
+    <div class="products-section">
+
+        <div class="header">
+            <div class="header-left">
+                <img src="{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo_charro.png' %}" alt="Logo"
+                    class="header-logo-mini">
+                <div class="header-title">{{ cat_nombre }}</div>
+            </div>
+            <div class="header-right">
+                <strong>IMPORTACIONES EL CHARRO</strong><br>
+                TEL: 7765-2468 | 5903-3475<br>
+                Quetzaltenango, Guatemala
+            </div>
+        </div>
+
+        <div class="products-grid-container">
+            {% for p in productos %}
+            <div class="product-card">
+                <div class="product-image-box">
+                    <div class="price-badge">{{ p.precio|default:"" }}</div>
+                    {% if p.imagen_catalogo %}
+                    <img src="{{ request.scheme }}://{{ request.get_host }}{{ p.imagen_catalogo.url }}"
+                        alt="{{ p.producto }}">
+                    {% else %}
+                    <div style="color: #ccc; font-size: 8px; font-weight: bold;">SIN IMAGEN</div>
+                    {% endif %}
+                </div>
+                <div class="product-details">
+                    <h3>{{ p.producto|truncatechars:35 }}</h3>
+                    <div class="specs">
+                        <div class="spec-item">REF: {{ p.codigo }}</div>
+                        <div class="spec-item">CALIDAD: ALTA</div>
+                        <div class="spec-item">STOCK: DISPONIBLE</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            <span>www.elcharro.com</span>
+            <span>Catálogo| {{ cat_nombre }}</span>
+        </div>
+    </div>
+    {% endfor %}
+
+</body>
+
+</html>
