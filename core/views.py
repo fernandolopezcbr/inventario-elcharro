@@ -2787,9 +2787,5 @@ def crear_categoria(request):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método no permitido'})
 
-@csrf_exempt
-def test_debug(request):
-    return JsonResponse({
-        'debug': settings.DEBUG,
-        'allowed_hosts': settings.ALLOWED_HOSTS,
-    })
+def handler404(request, exception):
+    return render(request, '404.html', status=404)
