@@ -172,4 +172,4 @@ ADMIN_SITE_HEADER = "Sistema de Inventario El Charro"
 ADMIN_SITE_TITLE = "Panel de Control"
 ADMIN_INDEX_TITLE = "Bienvenido al Sistema de Inventario"
 
-DEBUG = True    
+
