@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     
@@ -56,5 +58,6 @@ urlpatterns = [
     path('pedidos/eliminar-detalle/', views.eliminar_detalle_pedido, name='eliminar_detalle_pedido'),
     path('pedidos/anular/<int:id>/', views.anular_pedido, name='anular_pedido'),
     path('categorias/crear/', views.crear_categoria, name='crear_categoria'),
-    path('test-debug/', views.test_debug, name='test_debug'),
-]
+    path('admin-elcharro/', admin.site.urls),
+    path('', include('core.urls')),
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
