@@ -33,8 +33,8 @@ SECRET_KEY = 'django-insecure-$4nzo&uc(7j-f%)!%3bw=m&&m5+u7=a!zq$0%2ijh3--bp23@l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://inventario-elcharro.onrender.com', 'https://*.onrender.com']
 LOGOUT_REDIRECT_URL = '/login/'
 
 # Application definition
