@@ -59,5 +59,7 @@ urlpatterns = [
     path('pedidos/anular/<int:id>/', views.anular_pedido, name='anular_pedido'),
     path('categorias/crear/', views.crear_categoria, name='crear_categoria'),
     path('admin-elcharro/', admin.site.urls),
-    path('', include('core.urls')),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
