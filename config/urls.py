@@ -5,9 +5,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin-elcharro/', admin.site.urls),
-    path('', include('core.urls')),  # Esto incluye las URLs de core
+    path('', include('core.urls')),
 ]
 
-# Configuración para archivos media (imágenes)
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)    
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
