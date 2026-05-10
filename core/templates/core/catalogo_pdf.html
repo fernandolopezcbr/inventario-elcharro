@@ -267,8 +267,7 @@
     <!-- PORTADA -->
     <div class="cover">
         <div class="cover-border"></div>
-        <img src="{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo_charro.png' %}" alt="Logo"
-            class="cover-logo">
+        <img src="{{ SITE_URL }}{% static 'img/logo_charro.png' %}" alt="Logo" class="cover-logo">
         <h1>IMPORTACIONES EL CHARRO</h1>
         <h2>CATÁLOGO DE PRODUCTOS</h2>
         <div class="cover-divider"></div>
@@ -290,8 +289,7 @@
 
         <div class="header">
             <div class="header-left">
-                <img src="{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo_charro.png' %}" alt="Logo"
-                    class="header-logo-mini">
+                <img src="{{ SITE_URL }}{% static 'img/logo_charro.png' %}" alt="Logo" class="header-logo-mini">
                 <div class="header-title">{{ cat_nombre }}</div>
             </div>
             <div class="header-right">

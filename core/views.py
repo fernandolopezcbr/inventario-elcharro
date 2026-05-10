@@ -1966,6 +1966,7 @@ def listar_proveedores(request):
         'busqueda': busqueda,
         'por_pagina': por_pagina,
         'nombre_usuario': request.user.username,
+        'proveedores': Proveedor.objects.all().order_by('nombre'),
     }
     return render(request, 'core/proveedores.html', context)
 
@@ -1974,8 +1975,13 @@ def listar_proveedores(request):
 def crear_proveedor(request):
     if request.method == 'POST':
         try:
+            nit = request.POST.get('nit')
+            # Si el NIT está vacío, guardar como None
+            if not nit or nit.strip() == '':
+                nit = None
+            
             proveedor = Proveedor.objects.create(
-                nit=request.POST.get('nit'),
+                nit=nit,
                 nombre=request.POST.get('nombre'),
                 telefono=request.POST.get('telefono'),
                 email=request.POST.get('email'),
@@ -1986,11 +1992,10 @@ def crear_proveedor(request):
                 codigo_postal=request.POST.get('codigo_postal'),
                 observaciones=request.POST.get('observaciones')
             )
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'nombre': proveedor.nombre})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método no permitido'})
-
 
 @login_required
 def editar_proveedor(request, id):
@@ -2257,6 +2262,7 @@ def exportar_catalogo_pdf(request):
         'categorias': categorias_dict,
         'nombre_usuario': request.user.username,
         'request': request,
+        'SITE_URL': settings.SITE_URL, 
     })
     
     # Generar PDF
@@ -2378,6 +2384,7 @@ def catalogo_pedidos(request):
         })
     
     context = {
+        'nombre_usuario': request.user.username,
         'productos': resultados,
         'categorias': sorted(list(categorias_set)),
         'pendientes_count': Pedido.objects.filter(estado='pendiente').count(),
@@ -2557,6 +2564,7 @@ def historial_pedidos(request):
     pendientes_count = Pedido.objects.filter(estado='pendiente').count()
     
     context = {
+        'nombre_usuario': request.user.username,
         'pedidos': pedidos,
         'pendientes_count': pendientes_count,
         'busqueda': busqueda,
