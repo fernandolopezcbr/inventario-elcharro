@@ -173,3 +173,6 @@ ADMIN_SITE_TITLE = "Panel de Control"
 ADMIN_INDEX_TITLE = "Bienvenido al Sistema de Inventario"
 
 
+
+# URL base del sitio (para PDF y otros)
+SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
