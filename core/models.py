@@ -162,7 +162,7 @@ class Abono(models.Model):
     
 
 class Proveedor(models.Model):
-    nit = models.CharField(max_length=20, unique=True, verbose_name="NIT/ID")
+    nit = models.CharField(max_length=20, unique=False, blank=True, null=True, verbose_name="NIT/ID")
     nombre = models.CharField(max_length=100, verbose_name="Nombre/Razón Social")
     telefono = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono")
     email = models.EmailField(blank=True, null=True, verbose_name="Email")

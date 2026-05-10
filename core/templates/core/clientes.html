@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 
@@ -51,13 +52,28 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}"><i class="fas fa-box"></i> Inventario Empresa</a>
-            <div class="collapse navbar-collapse">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'img/logo_charro.png' %}" alt="El Charro Logo"
+                    style="height: 35px; margin-right: 8px;">
+                El Charro
+            </a>
+            <!-- Botón para móvil -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Menú colapsable -->
+            <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    <li class="nav-item">
+                        <span class="nav-link text-white">
+                            <i class="fas fa-user-circle"></i> {{ nombre_usuario }}
+                        </span>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
-                                class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

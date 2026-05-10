@@ -207,25 +207,39 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'img/logo_charro.png' %}"
-                    alt="El Charro Logo" class="logo-nav"></i> El Charro
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'img/logo_charro.png' %}" alt="El Charro Logo" class="logo-nav"
+                    style="height: 40px;">
+                El Charro
             </a>
-            <div class="collapse navbar-collapse">
+            <!-- Botón para móvil -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Menú colapsable -->
+            <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><span class="nav-link"><i class="fas fa-user"></i> {{ nombre_usuario }}</span>
+                    <li class="nav-item">
+                        <span class="nav-link" style="color: white; font-weight: 500;">
+                            <i class="fas fa-user-circle"></i> {{ nombre_usuario }}
+                        </span>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'historial_pedidos' %}">
-                            <i class="fas fa-history"></i> Historial Pedidos
+                            <i class="fas fa-history"></i>
+                            <span class="d-none d-lg-inline">Historial Pedidos</span>
+                            <span class="d-inline d-lg-none">Pedidos</span>
                             {% if pendientes_count > 0 %}
                             <span class="badge bg-warning ms-1">{{ pendientes_count }}</span>
                             {% endif %}
                         </a>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i>
-                            Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i
-                                class="fas fa-sign-out-alt"></i> Salir</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Salir</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -292,8 +306,8 @@
         <div class="cart-items" id="cartItems">
             <p class="text-muted text-center">No hay productos en el carrito</p>
         </div>
-        <div class="cart-footer">
-            <div class="d-flex justify-content-between mb-2">
+        <div class="cart-footer" style="margin-bottom: 1.1cm;">
+            <div class=" d-flex justify-content-between mb-2">
                 <strong>Total:</strong>
                 <strong id="cartTotal">Q0.00</strong>
             </div>
